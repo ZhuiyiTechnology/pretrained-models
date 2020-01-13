@@ -49,7 +49,7 @@ Bibtex：
   title={Open Language Pre-trained Model Zoo - ZhuiyiAI},
   author={Jianlin Su},
   year={2020},
-  url = "https://github.com/ZhuiyiAI/pretrained-models",
+  url = "https://github.com/ZhuiyiTechnology/pretrained-models",
 }
 ```
 
