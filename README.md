@@ -53,6 +53,9 @@ Bibtex：
 }
 ```
 
+## 致谢信息
+本项目部分受到[**谷歌TensorFlow Research Cloud**](https://www.tensorflow.org/tfrc)计划资助，在此特别致谢。
+
 ## 联系我们
 
 邮箱：ai@wezhuiyi.com
