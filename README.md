@@ -12,6 +12,25 @@
 | RoBERTa Small | 百科,新闻 等  |     35G    | 21128  | 48MB  | [百度网盘](https://pan.baidu.com/s/15-loby3PEwBtMLc-On6Vzg)(j2ns) |
 | SimBERT Base  | [百度知道](http://zhidao.baidu.com/) | 2200万相似句组 | 21128  | 344MB  | [百度网盘](https://pan.baidu.com/s/1uGfQmX1Kxcv_cXTVsvxTsQ)(6xhq) |
 
+## 评估结果
+
+这里给出部分数据集上模型的评测结果。
+
+### IFLYTEK' 长文本分类
+
+任务来源：https://github.com/CLUEbenchmark/CLUE
+
+评测脚本：<a href="https://github.com/ZhuiyiTechnology/pretrained-models/blob/master/examples/task_iflytek.py">task_iflytek.py</a>
+
+| 模型           | 开发集（dev） | 训练速度    | 到达最优所用epoch数 |
+| ------------  | ----------- | -----------| ----------------- |
+| RoBERTa Small |   57.66%    |  27s/epoch |         4         |
+| ALBERT Small  |   57.14%    |  24s/epoch |         5         |
+| RoBERTa Tiny  |   57.43%    |  16s/epoch |         4         |
+| ALBERT Tiny   |   56.42%    |  27s/epoch |         6         |
+
+(注：以上实验结果均为重复跑三次后的平均值。)
+
 ## 模型详情
 
 此处对每个模型进行较为详细的介绍
