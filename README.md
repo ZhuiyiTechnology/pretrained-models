@@ -27,9 +27,9 @@
 | RoBERTa Small |   57.66%    |  27s/epoch |         4         |
 | ALBERT Small  |   57.14%    |  24s/epoch |         5         |
 | RoBERTa Tiny  |   57.43%    |  16s/epoch |         4         |
-| ALBERT Tiny   |   56.42%    |  27s/epoch |         6         |
+| ALBERT Tiny   |   56.42%    |  14s/epoch |         6         |
 
-(注：以上实验结果均为重复跑三次后的平均值。)
+(注：以上实验结果均为重复跑三次后的平均值。预测速度，两个small模型完全一致，两个tiny模型也完全一致。)
 
 ## 模型详情
 
