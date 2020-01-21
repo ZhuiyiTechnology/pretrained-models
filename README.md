@@ -41,12 +41,12 @@
 
 评测指标：F1
 
-| 模型           | 开发集（dev） | 训练速度    |
-| :----------:  | :---------: | :---------:|
-| RoBERTa Small |   78.06%    |  375s/epoch |
-| ALBERT Small  |   77.70%    |  335s/epoch |
-| RoBERTa Tiny  |   76.81%    |  235s/epoch |
-| ALBERT Tiny   |   76.30%    |  215s/epoch |
+| 模型           | 开发集（dev） | 训练速度    | 第一个epoch结束时的F1 |
+| :----------:  | :---------: | :---------:| :-----------------: |
+| RoBERTa Small |   78.06%    |  375s/epoch |       62.84%       |
+| ALBERT Small  |   77.70%    |  335s/epoch |       49.51%       |
+| RoBERTa Tiny  |   76.81%    |  235s/epoch |       48.45%       |
+| ALBERT Tiny   |   76.30%    |  215s/epoch |       30.03%       |
 
 
 ## 模型详情
