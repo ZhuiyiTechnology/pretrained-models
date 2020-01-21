@@ -26,12 +26,12 @@
 
 评测指标：accuracy
 
-| 模型           | 开发集（dev） | 训练速度    | 到达最优所用epoch数 |
-| :----------:  | :---------: | :---------:| :---------------: |
-| RoBERTa Small |   57.66%    |  27s/epoch |         4         |
-| ALBERT Small  |   57.14%    |  24s/epoch |         5         |
-| RoBERTa Tiny  |   57.43%    |  16s/epoch |         4         |
-| ALBERT Tiny   |   56.42%    |  14s/epoch |         6         |
+| 模型           | 开发集（dev） | 训练速度    | 第一个epoch结束时的accuracy |
+| :----------:  | :---------: | :---------:| :-----------------------: |
+| RoBERTa Small |   57.66%    |  27s/epoch |         52.60%            |
+| ALBERT Small  |   57.14%    |  24s/epoch |         48.21%            |
+| RoBERTa Tiny  |   57.43%    |  16s/epoch |         49.76%            |
+| ALBERT Tiny   |   56.42%    |  14s/epoch |         43.84%            |
 
 ### LIC2019-IE 信息抽取任务
 
