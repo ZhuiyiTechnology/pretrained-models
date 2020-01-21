@@ -16,11 +16,15 @@
 
 这里给出部分数据集上模型的评测结果。
 
+(注：以下实验结果均为重复跑三次后的平均值。预测速度，两个small模型完全一致，两个tiny模型也完全一致。)
+
 ### IFLYTEK' 长文本分类
 
 任务来源：https://github.com/CLUEbenchmark/CLUE
 
 评测脚本：<a href="https://github.com/ZhuiyiTechnology/pretrained-models/blob/master/examples/task_iflytek.py">task_iflytek.py</a>
+
+评测指标：accuracy
 
 | 模型           | 开发集（dev） | 训练速度    | 到达最优所用epoch数 |
 | :----------:  | :---------: | :---------:| :---------------: |
@@ -29,7 +33,21 @@
 | RoBERTa Tiny  |   57.43%    |  16s/epoch |         4         |
 | ALBERT Tiny   |   56.42%    |  14s/epoch |         6         |
 
-(注：以上实验结果均为重复跑三次后的平均值。预测速度，两个small模型完全一致，两个tiny模型也完全一致。)
+### LIC2019-IE 信息抽取任务
+
+任务来源：http://lic2019.ccf.org.cn/kg
+
+评测脚本：<a href="https://github.com/ZhuiyiTechnology/pretrained-models/blob/master/examples/task_lic2019_ie.py">task_lic2019_ie.py</a>
+
+评测指标：F1
+
+| 模型           | 开发集（dev） | 训练速度    |
+| :----------:  | :---------: | :---------:|
+| RoBERTa Small |   78.06%    |  375s/epoch |
+| ALBERT Small  |   77.70%    |  335s/epoch |
+| RoBERTa Tiny  |   76.81%    |  235s/epoch |
+| ALBERT Tiny   |   76.30%    |  215s/epoch |
+
 
 ## 模型详情
 
