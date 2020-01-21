@@ -26,12 +26,12 @@
 
 评测指标：accuracy
 
-| 模型           | 开发集（dev） | 训练速度    | 第一个epoch结束时的accuracy |
-| :----------:  | :---------: | :---------:| :-----------------------: |
-| RoBERTa Small |   57.66%    |  27s/epoch |         52.60%            |
-| ALBERT Small  |   57.14%    |  24s/epoch |         48.21%            |
-| RoBERTa Tiny  |   57.43%    |  16s/epoch |         49.76%            |
-| ALBERT Tiny   |   56.42%    |  14s/epoch |         43.84%            |
+| 模型           | 开发集（dev） | 训练速度    | 第一个epoch结束时的指标值 |
+| :----------:  | :---------: | :---------:| :--------------------: |
+| RoBERTa Small |   57.66%    |  27s/epoch |         52.60%         |
+| ALBERT Small  |   57.14%    |  24s/epoch |         48.21%         |
+| RoBERTa Tiny  |   57.43%    |  16s/epoch |         49.76%         |
+| ALBERT Tiny   |   56.42%    |  14s/epoch |         43.84%         |
 
 ### LIC2019-IE 信息抽取任务
 
@@ -41,12 +41,12 @@
 
 评测指标：F1
 
-| 模型           | 开发集（dev） | 训练速度    | 第一个epoch结束时的F1 |
-| :----------:  | :---------: | :---------:| :-----------------: |
-| RoBERTa Small |   78.06%    |  375s/epoch |       62.84%       |
-| ALBERT Small  |   77.70%    |  335s/epoch |       49.51%       |
-| RoBERTa Tiny  |   76.81%    |  235s/epoch |       48.45%       |
-| ALBERT Tiny   |   76.30%    |  215s/epoch |       30.03%       |
+| 模型           | 开发集（dev） | 训练速度    | 第一个epoch结束时的指标值 |
+| :----------:  | :---------: | :---------:| :--------------------: |
+| RoBERTa Small |   78.06%    |  375s/epoch |         62.84%        |
+| ALBERT Small  |   77.70%    |  335s/epoch |         49.51%        |
+| RoBERTa Tiny  |   76.81%    |  235s/epoch |         48.45%        |
+| ALBERT Tiny   |   76.30%    |  215s/epoch |         30.03%        |
 
 
 ## 模型详情
