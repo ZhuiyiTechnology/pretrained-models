@@ -48,6 +48,22 @@
 | RoBERTa Tiny  |   76.65%    |  235s/epoch |         46.12%        |
 | ALBERT Tiny   |   75.94%    |  215s/epoch |         31.66%        |
 
+### CIPS-SogouQA 阅读理解式问答
+
+任务来源：http://task.www.sogou.com/cips-sogou_qa/
+
+评测脚本：<a href="https://github.com/ZhuiyiTechnology/pretrained-models/blob/master/examples/task_cips_sogou_qa.py">task_cips_sogou_qa.py</a>
+
+评测指标：(EM + F1) / 2
+
+| 模型           | 开发集（dev） | 训练速度    | 第一个epoch结束时的指标值 |
+| :----------:  | :---------: | :---------:| :--------------------: |
+| RoBERTa Small |   70.35%    |  607s/epoch |         61.07%        |
+| ALBERT Small  |   66.66%    |  582s/epoch |         50.93%        |
+| RoBERTa Tiny  |   67.85%    |  455s/epoch |         49.78%        |
+| ALBERT Tiny   |   63.41%    |  443s/epoch |         37.47%        |
+
+（注：此处是直接使用UniLM的Seq2Seq方案来做阅读理解，主要测试模型用做文本生成时的能力。但要说明的是，Seq2Seq并非做阅读理解的标准方案。）
 
 ## 模型详情
 
