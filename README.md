@@ -16,7 +16,22 @@
 
 这里给出部分数据集上模型的评测结果。
 
-(注：以下实验结果均为重复跑三次后的平均值。预测速度，两个small模型完全一致，两个tiny模型也完全一致。)
+(注：以下实验结果均为重复跑三次后的平均值。预测阶段，两个small模型速度完全一致，两个tiny模型速度也完全一致。)
+
+### 文本情感分类
+
+任务来源：https://github.com/bojone/bert4keras/blob/master/examples/datasets/sentiment.zip
+
+评测脚本：<a href="https://github.com/ZhuiyiTechnology/pretrained-models/blob/master/examples/task_sentiment.py">task_sentiment.py</a>
+
+评测指标：accuracy
+
+| 模型           | 验证集（valid） | 训练速度    | 第一个epoch结束时的指标值 |  测试集（test） |
+| :----------:  | :------------: | :---------:| :--------------------: | :------------: |
+| RoBERTa Small |     94.89%     |  38s/epoch |         90.48%         |     94.81%     |
+| ALBERT Small  |     94.57%     |  33s/epoch |         91.02%         |     94.52%     |
+| RoBERTa Tiny  |     94.46%     |  23s/epoch |         90.83%         |     94.00%     |
+| ALBERT Tiny   |     94.14%     |  20s/epoch |         90.18%         |     93.78%     |
 
 ### IFLYTEK' 长文本分类
 
@@ -26,7 +41,7 @@
 
 评测指标：accuracy
 
-| 模型           | 开发集（dev） | 训练速度    | 第一个epoch结束时的指标值 |
+| 模型           | 验证集（dev） | 训练速度    | 第一个epoch结束时的指标值 |
 | :----------:  | :---------: | :---------:| :--------------------: |
 | RoBERTa Small |   57.66%    |  27s/epoch |         52.60%         |
 | ALBERT Small  |   57.14%    |  24s/epoch |         48.21%         |
@@ -41,7 +56,7 @@
 
 评测指标：F1
 
-| 模型           | 开发集（dev） | 训练速度    | 第一个epoch结束时的指标值 |
+| 模型           | 验证集（dev） | 训练速度    | 第一个epoch结束时的指标值 |
 | :----------:  | :---------: | :---------:| :--------------------: |
 | RoBERTa Small |   78.09%    |  375s/epoch |         63.85%        |
 | ALBERT Small  |   77.69%    |  335s/epoch |         46.58%        |
@@ -56,7 +71,7 @@
 
 评测指标：(EM + F1) / 2
 
-| 模型           | 开发集（dev） | 训练速度    | 第一个epoch结束时的指标值 |
+| 模型           | 验证集（dev） | 训练速度    | 第一个epoch结束时的指标值 |
 | :----------:  | :---------: | :---------:| :--------------------: |
 | RoBERTa Small |   70.35%    |  607s/epoch |         61.07%        |
 | ALBERT Small  |   66.66%    |  582s/epoch |         50.93%        |
