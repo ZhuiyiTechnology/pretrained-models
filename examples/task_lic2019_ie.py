@@ -168,6 +168,7 @@ object_labels = Input(shape=(None, len(predicate2id), 2), name='Object-Labels')
 bert = build_transformer_model(
     config_path=config_path,
     checkpoint_path=checkpoint_path,
+    model=model_type,
     return_keras_model=False,
 )
 
