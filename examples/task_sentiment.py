@@ -2,13 +2,13 @@
 # 情感分析例子
 
 import json
-from io import open
 import numpy as np
 from bert4keras.backend import keras, set_gelu
 from bert4keras.tokenizers import Tokenizer
 from bert4keras.models import build_transformer_model
 from bert4keras.optimizers import Adam, extend_with_piecewise_linear_lr
 from bert4keras.snippets import sequence_padding, DataGenerator
+from bert4keras.snippets import open
 from keras.layers import *
 
 set_gelu('tanh')  # 切换gelu版本
