@@ -5,16 +5,15 @@
 # 修改自：https://github.com/bojone/bert4keras/blob/master/examples/task_relation_extraction.py
 
 import json
-from io import open
 import numpy as np
-import tensorflow as tf
 from bert4keras.backend import keras, K, batch_gather
 from bert4keras.layers import LayerNormalization
-from bert4keras.tokenizer import Tokenizer
-from bert4keras.bert import build_bert_model
+from bert4keras.tokenizers import Tokenizer
+from bert4keras.models import build_transformer_model
 from bert4keras.optimizers import Adam, ExponentialMovingAverage
 from bert4keras.snippets import sequence_padding, DataGenerator
-from keras.layers import *
+from bert4keras.snippets import open
+from keras.layers import Input, Dense, Lambda, Reshape
 from keras.models import Model
 from tqdm import tqdm
 
@@ -34,11 +33,13 @@ config_path = '/root/kg/bert/albert_small_zh_google/albert_config.json'
 checkpoint_path = '/root/kg/bert/albert_small_zh_google/albert_model.ckpt'
 dict_path = '/root/kg/bert/albert_small_zh_google/vocab.txt'
 model_type = 'albert'
+
 # RoBERTa tiny
 config_path = '/root/kg/bert/chinese_roberta_L-4_H-312_A-12/bert_config.json'
 checkpoint_path = '/root/kg/bert/chinese_roberta_L-4_H-312_A-12/bert_model.ckpt'
 dict_path = '/root/kg/bert/chinese_roberta_L-4_H-312_A-12/vocab.txt'
 model_type = 'bert'
+
 # albert tiny
 config_path = '/root/kg/bert/albert_tiny_zh_google/albert_config.json'
 checkpoint_path = '/root/kg/bert/albert_tiny_zh_google/albert_model.ckpt'
@@ -93,13 +94,9 @@ class data_generator(DataGenerator):
     """数据生成器
     """
     def __iter__(self, random=False):
-        idxs = list(range(len(self.data)))
-        if random:
-            np.random.shuffle(idxs)
         batch_token_ids, batch_segment_ids = [], []
         batch_subject_labels, batch_subject_ids, batch_object_labels = [], [], []
-        for i in idxs:
-            d = self.data[i]
+        for is_end, d in self.sample(random):
             token_ids, segment_ids = tokenizer.encode(d['text'], max_length=maxlen)
             # 整理三元组 {s: [(o, p)]}
             spoes = {}
@@ -137,7 +134,7 @@ class data_generator(DataGenerator):
                 batch_subject_labels.append(subject_labels)
                 batch_subject_ids.append(subject_ids)
                 batch_object_labels.append(object_labels)
-                if len(batch_token_ids) == self.batch_size or i == idxs[-1]:
+                if len(batch_token_ids) == self.batch_size or is_end:
                     batch_token_ids = sequence_padding(batch_token_ids)
                     batch_segment_ids = sequence_padding(batch_segment_ids)
                     batch_subject_labels = sequence_padding(batch_subject_labels, padding=np.zeros(2))
@@ -168,10 +165,9 @@ subject_ids = Input(shape=(2, ), name='Subject-Ids')
 object_labels = Input(shape=(None, len(predicate2id), 2), name='Object-Labels')
 
 # 加载预训练模型
-bert = build_bert_model(
+bert = build_transformer_model(
     config_path=config_path,
     checkpoint_path=checkpoint_path,
-    model=model_type,
     return_keras_model=False,
 )
 
@@ -191,8 +187,8 @@ output = LayerNormalization(conditional=True)([output, subject])
 output = Dense(units=len(predicate2id) * 2,
                activation='sigmoid',
                kernel_initializer=bert.initializer)(output)
-output = Reshape((-1, len(predicate2id), 2))(output)
-object_preds = Lambda(lambda x: x**4)(output)
+output = Lambda(lambda x: x**4)(output)
+object_preds = Reshape((-1, len(predicate2id), 2))(output)
 
 object_model = Model(bert.model.inputs + [subject_ids], object_preds)
 
@@ -200,7 +196,8 @@ object_model = Model(bert.model.inputs + [subject_ids], object_preds)
 train_model = Model(bert.model.inputs + [subject_labels, subject_ids, object_labels],
                     [subject_preds, object_preds])
 
-mask = bert.model.get_layer('Sequence-Mask').output_mask
+mask = bert.model.get_layer('Embedding-Token').output_mask
+mask = K.cast(mask, K.floatx())
 
 subject_loss = K.binary_crossentropy(subject_labels, subject_preds)
 subject_loss = K.mean(subject_loss, 2)
