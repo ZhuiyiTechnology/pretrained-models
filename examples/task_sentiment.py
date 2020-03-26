@@ -5,8 +5,8 @@ import json
 from io import open
 import numpy as np
 from bert4keras.backend import keras, set_gelu
-from bert4keras.tokenizer import Tokenizer
-from bert4keras.bert import build_bert_model
+from bert4keras.tokenizers import Tokenizer
+from bert4keras.models import build_transformer_model
 from bert4keras.optimizers import Adam, extend_with_piecewise_linear_lr
 from bert4keras.snippets import sequence_padding, DataGenerator
 from keras.layers import *
@@ -67,17 +67,13 @@ class data_generator(DataGenerator):
     """数据生成器
     """
     def __iter__(self, random=False):
-        idxs = list(range(len(self.data)))
-        if random:
-            np.random.shuffle(idxs)
         batch_token_ids, batch_segment_ids, batch_labels = [], [], []
-        for i in idxs:
-            text, label = self.data[i]
+        for is_end, (text, label) in self.sample(random):
             token_ids, segment_ids = tokenizer.encode(text, max_length=maxlen)
             batch_token_ids.append(token_ids)
             batch_segment_ids.append(segment_ids)
             batch_labels.append([label])
-            if len(batch_token_ids) == self.batch_size or i == idxs[-1]:
+            if len(batch_token_ids) == self.batch_size or is_end:
                 batch_token_ids = sequence_padding(batch_token_ids)
                 batch_segment_ids = sequence_padding(batch_segment_ids)
                 batch_labels = sequence_padding(batch_labels)
@@ -86,7 +82,7 @@ class data_generator(DataGenerator):
 
 
 # 加载预训练模型
-bert = build_bert_model(
+bert = build_transformer_model(
     config_path=config_path,
     checkpoint_path=checkpoint_path,
     model=model_type,
