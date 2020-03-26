@@ -3,13 +3,13 @@
 # 数据集和评测同 https://github.com/bojone/dgcnn_for_reading_comprehension
 
 import json, os, re
-from io import open
 import numpy as np
 from bert4keras.backend import keras, K
-from bert4keras.bert import build_bert_model
-from bert4keras.tokenizer import Tokenizer, load_vocab
+from bert4keras.models import build_transformer_model
+from bert4keras.tokenizers import Tokenizer, load_vocab
 from bert4keras.optimizers import Adam
-from bert4keras.snippets import sequence_padding, DataGenerator
+from bert4keras.snippets import sequence_padding, open
+from bert4keras.snippets import DataGenerator, AutoRegressiveDecoder
 from tqdm import tqdm
 
 
@@ -18,7 +18,7 @@ max_q_len = 64
 max_a_len = 32
 max_qa_len = max_q_len + max_a_len
 batch_size = 32
-epochs = 20
+epochs = 8
 
 # RoBERTa small
 config_path = '/root/kg/bert/chinese_roberta_L-6_H-384_A-12/bert_config.json'
@@ -46,13 +46,14 @@ dict_path = '/root/kg/bert/albert_tiny_zh_google/vocab.txt'
 model_type = 'albert'
 """
 
+
 # 标注数据
 webqa_data = json.load(open('/root/qa_datasets/WebQA.json'))
 sogou_data = json.load(open('/root/qa_datasets/SogouQA.json'))
 
 # 保存一个随机序（供划分valid用）
 if not os.path.exists('../random_order.json'):
-    random_order = range(len(sogou_data))
+    random_order = list(range(len(sogou_data)))
     np.random.shuffle(random_order)
     json.dump(random_order, open('../random_order.json', 'w'), indent=4)
 else:
@@ -65,22 +66,12 @@ train_data.extend(train_data)
 train_data.extend(webqa_data)  # 将SogouQA和WebQA按2:1的比例混合
 
 # 加载并精简词表，建立分词器
-_token_dict = load_vocab(dict_path)  # 读取词典
-token_dict, keep_words = {}, []  # keep_words是在bert中保留的字表
-
-for t in ['[PAD]', '[UNK]', '[CLS]', '[SEP]']:
-    token_dict[t] = len(token_dict)
-    keep_words.append(_token_dict[t])
-
-for t, _ in sorted(_token_dict.items(), key=lambda s: s[1]):
-    if t not in token_dict:
-        if len(t) == 3 and (Tokenizer._is_cjk_character(t[-1])
-                            or Tokenizer._is_punctuation(t[-1])):
-            continue
-        token_dict[t] = len(token_dict)
-        keep_words.append(_token_dict[t])
-
-tokenizer = Tokenizer(token_dict, do_lower_case=True)  # 建立分词器
+token_dict, keep_tokens = load_vocab(
+    dict_path=dict_path,
+    simplified=True,
+    startwith=['[PAD]', '[UNK]', '[CLS]', '[SEP]'],
+)
+tokenizer = Tokenizer(token_dict, do_lower_case=True)
 
 
 class data_generator(DataGenerator):
@@ -89,12 +80,8 @@ class data_generator(DataGenerator):
     def __iter__(self, random=False):
         """单条样本格式：[CLS]篇章[SEP]问题[SEP]答案[SEP]
         """
-        idxs = list(range(len(self.data)))
-        if random:
-            np.random.shuffle(idxs)
         batch_token_ids, batch_segment_ids = [], []
-        for i in idxs:
-            D = self.data[i]
+        for is_end, D in self.sample(random):
             question = D['question']
             answers = [p['answer'] for p in D['passages'] if p['answer']]
             passage = np.random.choice(D['passages'])['passage']
@@ -112,132 +99,132 @@ class data_generator(DataGenerator):
             segment_ids = p_segment_ids + qa_segment_ids[1:]
             batch_token_ids.append(token_ids)
             batch_segment_ids.append(segment_ids)
-            if len(batch_token_ids) == self.batch_size or i == idxs[-1]:
+            if len(batch_token_ids) == self.batch_size or is_end:
                 batch_token_ids = sequence_padding(batch_token_ids)
                 batch_segment_ids = sequence_padding(batch_segment_ids)
                 yield [batch_token_ids, batch_segment_ids], None
                 batch_token_ids, batch_segment_ids = [], []
 
 
-model = build_bert_model(
+model = build_transformer_model(
     config_path,
     checkpoint_path,
     model=model_type,
-    application='seq2seq',
-    keep_words=keep_words,  # 只保留keep_words中的字，精简原字表
+    application='unilm',
+    keep_tokens=keep_tokens,  # 只保留keep_tokens中的字，精简原字表
 )
 model.summary()
 
 # 交叉熵作为loss，并mask掉输入部分的预测
-y_in = model.input[0][:, 1:]  # 目标tokens
+y_true = model.input[0][:, 1:]  # 目标tokens
 y_mask = model.input[1][:, 1:]
-y = model.output[:, :-1]  # 预测tokens，预测与目标错开一位
-cross_entropy = K.sparse_categorical_crossentropy(y_in, y)
+y_pred = model.output[:, :-1]  # 预测tokens，预测与目标错开一位
+cross_entropy = K.sparse_categorical_crossentropy(y_true, y_pred)
 cross_entropy = K.sum(cross_entropy * y_mask) / K.sum(y_mask)
 
 model.add_loss(cross_entropy)
 model.compile(optimizer=Adam(1e-5))
 
 
-def get_ngram_set(x, n):
-    """生成ngram合集，返回结果格式是:
-    {(n-1)-gram: set([n-gram的第n个字集合])}
-    """
-    result = {}
-    for i in range(len(x) - n + 1):
-        k = tuple(x[i: i + n])
-        if k[:-1] not in result:
-            result[k[:-1]] = set()
-        result[k[:-1]].add(k[-1])
-    return result
-
-
-def gen_answer(question, passages, topk=2, mode='extractive'):
+class ReadingComprehension(AutoRegressiveDecoder):
     """beam search解码来生成答案
-    每次只保留topk个最优候选结果；如果topk=1，那么就是贪心搜索。
     passages为多篇章组成的list，从多篇文章中自动决策出最优的答案，
     如果没答案，则返回空字符串。
     mode是extractive时，按照抽取式执行，即答案必须是原篇章的一个片段。
     """
-    token_ids, segment_ids = [], []
-    for passage in passages:
-        passage = re.sub(u' |、|；|，', ',', passage)
-        p_token_ids = tokenizer.encode(passage, max_length=max_p_len)[0]
-        q_token_ids = tokenizer.encode(question, max_length=max_q_len + 1)[0]
-        token_ids.append(p_token_ids + q_token_ids[1:])
-        segment_ids.append([0] * len(token_ids[-1]))
-    target_ids = [[] for _ in range(topk)]  # 候选答案id
-    target_scores = [0] * topk  # 候选答案分数
-    for i in range(max_a_len):  # 强制要求输出不超过max_a_len字
-        _target_ids, _segment_ids = [], []
-        # 篇章与候选答案组合
-        for tids, sids in zip(token_ids, segment_ids):
-            for t in target_ids:
-                _target_ids.append(tids + t)
-                _segment_ids.append(sids + [1] * len(t))
-        _padded_target_ids = sequence_padding(_target_ids)
-        _padded_segment_ids = sequence_padding(_segment_ids)
-        _probas = model.predict([_padded_target_ids, _padded_segment_ids
-                                 ])[..., 3:]  # 直接忽略[PAD], [UNK], [CLS]
-        _probas = [
-            _probas[j, len(ids) - 1] for j, ids in enumerate(_target_ids)
+    def __init__(self, mode='extractive', **kwargs):
+        super(ReadingComprehension, self).__init__(**kwargs)
+        self.mode = mode
+
+    def get_ngram_set(self, x, n):
+        """生成ngram合集，返回结果格式是:
+        {(n-1)-gram: set([n-gram的第n个字集合])}
+        """
+        result = {}
+        for i in range(len(x) - n + 1):
+            k = tuple(x[i:i + n])
+            if k[:-1] not in result:
+                result[k[:-1]] = set()
+            result[k[:-1]].add(k[-1])
+        return result
+
+    @AutoRegressiveDecoder.set_rtype('probas')
+    def predict(self, inputs, output_ids, step):
+        inputs = [i for i in inputs if i[0, 0] > -1]  # 过滤掉无答案篇章
+        topk = len(inputs[0])
+        all_token_ids, all_segment_ids = [], []
+        for token_ids in inputs:  # inputs里每个元素都代表一个篇章
+            token_ids = np.concatenate([token_ids, output_ids], 1)
+            segment_ids = np.zeros_like(token_ids)
+            if step > 0:
+                segment_ids[:, -output_ids.shape[1]:] = 1
+            all_token_ids.extend(token_ids)
+            all_segment_ids.extend(segment_ids)
+        padded_all_token_ids = sequence_padding(all_token_ids)
+        padded_all_segment_ids = sequence_padding(all_segment_ids)
+        probas = model.predict([padded_all_token_ids, padded_all_segment_ids])
+        probas = [
+            probas[i, len(ids) - 1] for i, ids in enumerate(all_token_ids)
         ]
-        _probas = np.array(_probas).reshape((len(token_ids), topk, -1))
-        if i == 0:
+        probas = np.array(probas).reshape((len(inputs), topk, -1))
+        if step == 0:
             # 这一步主要是排除没有答案的篇章
-            # 如果开始[SEP]为最大值，那说明该篇章没有答案
-            _probas_argmax = _probas[:, 0].argmax(axis=1)
-            _available_idxs = np.where(_probas_argmax != 0)[0]
-            if len(_available_idxs) == 0:
-                return ''
+            # 如果一开始最大值就为end_id，那说明该篇章没有答案
+            argmax = probas[:, 0].argmax(axis=1)
+            available_idxs = np.where(argmax != self.end_id)[0]
+            if len(available_idxs) == 0:
+                scores = np.zeros_like(probas[0])
+                scores[:, self.end_id] = 1
+                return scores
             else:
-                _probas = _probas[_available_idxs]
-                token_ids = [token_ids[j] for j in _available_idxs]
-                segment_ids = [segment_ids[j] for j in _available_idxs]
-        if mode == 'extractive':
+                for i in np.where(argmax == self.end_id)[0]:
+                    inputs[i][:, 0] = -1  # 无答案篇章首位标记为-1
+                probas = probas[available_idxs]
+                inputs = [i for i in inputs if i[0, 0] > -1]  # 过滤掉无答案篇章
+        if self.mode == 'extractive':
             # 如果是抽取式，那么答案必须是篇章的一个片段
             # 那么将非篇章片段的概率值全部置0
-            _zeros = np.zeros_like(_probas)
-            _ngrams = {}
-            for p_token_ids in token_ids:
-                for k, v in get_ngram_set(p_token_ids, i + 1).items():
-                    _ngrams[k] = _ngrams.get(k, set()) | v
-            for j, t in enumerate(target_ids):
-                _available_idxs = _ngrams.get(tuple(t), set())
-                _available_idxs.add(token_dict['[SEP]'])
-                _available_idxs = [k - 3 for k in _available_idxs]
-                _zeros[:, j, _available_idxs] = _probas[:, j, _available_idxs]
-            _probas = _zeros
-        _probas = (_probas**2).sum(0) / (_probas.sum(0) + 1)  # 某种平均投票方式
-        _log_probas = np.log(_probas + 1e-6)  # 取对数，方便计算
-        _topk_arg = _log_probas.argsort(axis=1)[:, -topk:]  # 每一项选出topk
-        _candidate_ids, _candidate_scores = [], []
-        for j, (ids, sco) in enumerate(zip(target_ids, target_scores)):
-            # 预测第一个字的时候，输入的topk事实上都是同一个，
-            # 所以只需要看第一个，不需要遍历后面的。
-            if i == 0 and j > 0:
-                continue
-            for k in _topk_arg[j]:
-                _candidate_ids.append(ids + [k + 3])
-                _candidate_scores.append(sco + _log_probas[j][k])
-        _topk_arg = np.argsort(_candidate_scores)[-topk:]  # 从中选出新的topk
-        target_ids = [_candidate_ids[k] for k in _topk_arg]
-        target_scores = [_candidate_scores[k] for k in _topk_arg]
-        best_one = np.argmax(target_scores)
-        if target_ids[best_one][-1] == 3:
-            return tokenizer.decode(target_ids[best_one])
-    # 如果max_a_len字都找不到结束符，直接返回
-    return tokenizer.decode(target_ids[np.argmax(target_scores)])
+            new_probas = np.zeros_like(probas)
+            ngrams = {}
+            for token_ids in inputs:
+                token_ids = token_ids[0]
+                sep_idx = np.where(token_ids == tokenizer._token_end_id)[0][0]
+                p_token_ids = token_ids[1:sep_idx]
+                for k, v in self.get_ngram_set(p_token_ids, step + 1).items():
+                    ngrams[k] = ngrams.get(k, set()) | v
+            for i, ids in enumerate(output_ids):
+                available_idxs = ngrams.get(tuple(ids), set())
+                available_idxs.add(tokenizer._token_end_id)
+                available_idxs = list(available_idxs)
+                new_probas[:, i, available_idxs] = probas[:, i, available_idxs]
+            probas = new_probas
+        return (probas**2).sum(0) / (probas.sum(0) + 1)  # 某种平均投票方式
+
+    def answer(self, question, passages, topk=1):
+        token_ids = []
+        for passage in passages:
+            passage = re.sub(u' |、|；|，', ',', passage)
+            p_token_ids = tokenizer.encode(passage, max_length=max_p_len)[0]
+            q_token_ids = tokenizer.encode(question, max_length=max_q_len + 1)[0]
+            token_ids.append(p_token_ids + q_token_ids[1:])
+        output_ids = self.beam_search(token_ids, topk)  # 基于beam search
+        return tokenizer.decode(output_ids)
 
 
-def predict_to_file(data, filename, topk=2, mode='extractive'):
+reader = ReadingComprehension(start_id=None,
+                              end_id=tokenizer._token_end_id,
+                              maxlen=max_a_len,
+                              mode='extractive')
+
+
+def predict_to_file(data, filename, topk=1):
     """将预测结果输出到文件，方便评估
     """
     with open(filename, 'w', encoding='utf-8') as f:
         for d in tqdm(iter(data), desc=u'正在预测(共%s条样本)' % len(data)):
             q_text = d['question']
             p_texts = [p['passage'] for p in d['passages']]
-            a = gen_answer(q_text, p_texts, topk, mode)
+            a = reader.answer(q_text, p_texts, topk)
             if a:
                 s = u'%s\t%s\n' % (d['id'], a)
             else:
@@ -248,23 +235,13 @@ def predict_to_file(data, filename, topk=2, mode='extractive'):
 
 class Evaluate(keras.callbacks.Callback):
     def __init__(self):
-        self.best = 0.
+        self.lowest = 1e10
 
     def on_epoch_end(self, epoch, logs=None):
-        acc, f1, final = self.evaluate()
-        if final > self.best:
-            self.best = final
-            model.save_weights('best_model.weights')
-        print('acc: %.5f, f1: %.5f, final: %.5f, best final: %.5f\n' % (acc, f1, final, self.best))
-
-    def evaluate(self):
-        predict_to_file(valid_data, 'tmp_result.txt')
-        acc, f1, final = json.loads(
-            os.popen(
-                'python ../evaluate_tool/evaluate.py tmp_result.txt tmp_output.txt'
-            ).read().strip()
-        )
-        return acc, f1, final
+        # 保存最优
+        if logs['loss'] <= self.lowest:
+            self.lowest = logs['loss']
+            model.save_weights('./best_model.weights')
 
 
 if __name__ == '__main__':
