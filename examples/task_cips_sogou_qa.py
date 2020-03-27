@@ -235,13 +235,23 @@ def predict_to_file(data, filename, topk=1):
 
 class Evaluate(keras.callbacks.Callback):
     def __init__(self):
-        self.lowest = 1e10
+        self.best = 0.
 
     def on_epoch_end(self, epoch, logs=None):
-        # 保存最优
-        if logs['loss'] <= self.lowest:
-            self.lowest = logs['loss']
-            model.save_weights('./best_model.weights')
+        acc, f1, final = self.evaluate()
+        if final > self.best:
+            self.best = final
+            model.save_weights('best_model.weights')
+        print('acc: %.5f, f1: %.5f, final: %.5f, best final: %.5f\n' % (acc, f1, final, self.best))
+
+    def evaluate(self):
+        predict_to_file(valid_data, 'tmp_result.txt')
+        acc, f1, final = json.loads(
+            os.popen(
+                'python /root/reading/evaluate_tool/evaluate.py tmp_result.txt tmp_output.txt'
+            ).read().strip()
+        )
+        return acc, f1, final
 
 
 if __name__ == '__main__':
