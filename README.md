@@ -115,6 +115,22 @@
 
 - <strong>【备注】</strong> 简单来说，这就是一个finetune过的bert base模型，但是[CLS]对应的输出具有句向量的意义，可以用于检索任务，理论上短文本效果会更好，在跟<a href="https://kexue.fm/archives/5743">这里</a>一样的验证集上得到了0.96的top1准确率；此外还具有一对多生成能力。详见例子<a href="examples/simbert_base.py">simbert_base.py</a>。
 
+### RoBERTa<sup>+</sup> Tiny
+
+- <strong>【配置】</strong> 4层模型，hidden size为312，key_size增大为104（原来的4倍），对Embedding层做了低秩分解(312->128->312)，可以用<a href="https://github.com/bojone/bert4keras/tree/master/examples">bert4keras</a>加载使用。
+
+- <strong>【训练】</strong> 使用<a href="https://github.com/bojone/bert4keras/tree/master/pretraining">bert4keras</a>在TPU v3-8上训练，使用带梯度累积的LAMB优化器，批大小为800，累积4步更新，相当于以批大小3200训练了125k步（前3125步为warmup）。
+
+- <strong>【备注】</strong> 速度比RoBERTa Tiny略慢，但整体效果更优。
+
+### RoBERTa<sup>+</sup> Small
+
+- <strong>【配置】</strong> 6层模型，hidden size为384，key_size增大为128（原来的4倍），对Embedding层做了低秩分解(384->128->384)，可以用<a href="https://github.com/bojone/bert4keras/tree/master/examples">bert4keras</a>加载使用。
+
+- <strong>【训练】</strong> 使用<a href="https://github.com/bojone/bert4keras/tree/master/pretraining">bert4keras</a>在TPU v3-8上训练，使用带梯度累积的LAMB优化器，批大小为800，累积4步更新，相当于以批大小3200训练了125k步（前3125步为warmup）。
+
+- <strong>【备注】</strong> 速度比RoBERTa Small略慢，但整体效果更优。
+
 ## 如何引用
 
 Bibtex：
