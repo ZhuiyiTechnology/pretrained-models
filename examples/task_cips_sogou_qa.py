@@ -18,7 +18,7 @@ max_q_len = 64
 max_a_len = 32
 max_qa_len = max_q_len + max_a_len
 batch_size = 32
-epochs = 8
+epochs = 20
 
 # RoBERTa small
 config_path = '/root/kg/bert/chinese_roberta_L-6_H-384_A-12/bert_config.json'
