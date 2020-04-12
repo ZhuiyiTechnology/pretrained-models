@@ -80,8 +80,10 @@
 
 | 模型           | 验证集（dev） | 训练速度    | 第一个epoch结束时的指标值 |
 | :----------:  | :---------: | :---------:| :--------------------: |
+| RoBERTa<sup>+</sup> Small |   71.27%    |  673s/epoch |         56.09%        |
 | RoBERTa Small |   70.35%    |  607s/epoch |         61.07%        |
 | ALBERT Small  |   66.66%    |  582s/epoch |         50.93%        |
+| RoBERTa<sup>+</sup> Tiny  |   68.37%    |  481s/epoch |         52.59%        |
 | RoBERTa Tiny  |   67.85%    |  455s/epoch |         49.78%        |
 | ALBERT Tiny   |   63.41%    |  443s/epoch |         37.47%        |
 
