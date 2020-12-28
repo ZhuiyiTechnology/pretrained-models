@@ -1,5 +1,6 @@
 #! -*- coding: utf-8 -*-
 # SimBERT base 基本例子
+# 测试环境：tensorflow 1.14 + keras 2.3.1 + bert4keras 0.7.7
 
 import numpy as np
 from collections import Counter
