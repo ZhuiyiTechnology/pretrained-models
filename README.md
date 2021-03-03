@@ -15,6 +15,8 @@
 | SimBERT Base  | [百度知道](http://zhidao.baidu.com/) | 2200万相似句组 | 13685  | 344MB  | [百度网盘](https://pan.baidu.com/s/1uGfQmX1Kxcv_cXTVsvxTsQ)(6xhq) |
 | RoBERTa<sup>+</sup> Tiny  | 百科,新闻 等  |     35G    | 21128    | 35MB | [百度网盘](https://pan.baidu.com/s/1JjqwVhnpIGtjecXBsdv2BQ)(bbgq) |
 | RoBERTa<sup>+</sup> Small | 百科,新闻 等  |     35G    | 21128  | 67MB  | [百度网盘](https://pan.baidu.com/s/1L_15sYXZcVmlxb9QqgAJ-Q)(88wp) |
+| WoBERT | 百科,新闻 等  |     35G    | 33586/50000  | 400M  | [WoBERT项目](https://github.com/ZhuiyiTechnology/WoBERT) |
+| T5 PEGASUS | 百科,新闻 等  |     35G    | 50000  | 971M  | [T5 PEGASUS项目](https://github.com/ZhuiyiTechnology/t5-pegasus) |
 
 
 ## 评估结果
