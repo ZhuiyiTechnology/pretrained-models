@@ -8,16 +8,15 @@
 
 | 名称           | 数据来源     | 训练数据大小 | 词表大小 | 模型大小 | 下载地址 |
 | :----------:  | :---------: | :---------:| :------: | :------: | :------: |
-| RoBERTa Tiny  | 百科,新闻 等  |     35G    | 21128    | 27MB | [百度网盘](https://pan.baidu.com/s/1AfRKIBMIoxzXbfqWE4aDsw)(mrcv) |
-| RoBERTa Small | 百科,新闻 等  |     35G    | 21128  | 48MB  | [百度网盘](https://pan.baidu.com/s/15-loby3PEwBtMLc-On6Vzg)(j2ns) |
-| SimBERT Tiny  | [百度知道](http://zhidao.baidu.com/) | 2200万相似句组 | 13685  | 26MB  | [百度网盘](https://pan.baidu.com/s/1z_agqTuBTuyHANwrS-gPcg)(1tp7) |
-| SimBERT Small  | [百度知道](http://zhidao.baidu.com/) | 2200万相似句组 | 13685  | 49MB  | [百度网盘](https://pan.baidu.com/s/1kq_EQDI0gpiZBLFd_AxwrA)(nu67) |
-| SimBERT Base  | [百度知道](http://zhidao.baidu.com/) | 2200万相似句组 | 13685  | 344MB  | [百度网盘](https://pan.baidu.com/s/1uGfQmX1Kxcv_cXTVsvxTsQ)(6xhq) |
-| RoBERTa<sup>+</sup> Tiny  | 百科,新闻 等  |     35G    | 21128    | 35MB | [百度网盘](https://pan.baidu.com/s/1JjqwVhnpIGtjecXBsdv2BQ)(bbgq) |
-| RoBERTa<sup>+</sup> Small | 百科,新闻 等  |     35G    | 21128  | 67MB  | [百度网盘](https://pan.baidu.com/s/1L_15sYXZcVmlxb9QqgAJ-Q)(88wp) |
+| RoBERTa Tiny  | 百科,新闻 等  |     35G    | 21128    | 27MB | [下载链接](https://open.zhuiyi.ai/releases/nlp/models/zhuiyi/chinese_roberta_L-4_H-312_A-12.zip) |
+| RoBERTa Small | 百科,新闻 等  |     35G    | 21128  | 48MB  | [下载链接](https://open.zhuiyi.ai/releases/nlp/models/zhuiyi/chinese_roberta_L-6_H-384_A-12.zip) |
+| SimBERT Tiny  | [百度知道](http://zhidao.baidu.com/) | 2200万相似句组 | 13685  | 26MB  | [下载链接](https://open.zhuiyi.ai/releases/nlp/models/zhuiyi/chinese_simbert_L-4_H-312_A-12.zip) |
+| SimBERT Small  | [百度知道](http://zhidao.baidu.com/) | 2200万相似句组 | 13685  | 49MB  | [下载链接](https://open.zhuiyi.ai/releases/nlp/models/zhuiyi/chinese_simbert_L-6_H-384_A-12.zip) |
+| SimBERT Base  | [百度知道](http://zhidao.baidu.com/) | 2200万相似句组 | 13685  | 344MB  | [下载链接](https://open.zhuiyi.ai/releases/nlp/models/zhuiyi/chinese_simbert_L-12_H-768_A-12.zip) |
+| RoBERTa<sup>+</sup> Tiny  | 百科,新闻 等  |     35G    | 21128    | 35MB | [下载链接](https://open.zhuiyi.ai/releases/nlp/models/zhuiyi/chinese_roberta_L-4_H-312_A-12_K-104.zip) |
+| RoBERTa<sup>+</sup> Small | 百科,新闻 等  |     35G    | 21128  | 67MB  | [下载链接](https://open.zhuiyi.ai/releases/nlp/models/zhuiyi/chinese_roberta_L-6_H-384_A-12_K-128.zip) |
 | WoBERT | 百科,新闻 等  |     35G    | 33586/50000  | 400M  | [WoBERT项目](https://github.com/ZhuiyiTechnology/WoBERT) |
 | T5 PEGASUS | 百科,新闻 等  |     35G    | 50000  | 971M  | [T5 PEGASUS项目](https://github.com/ZhuiyiTechnology/t5-pegasus) |
-
 
 ## 评估结果
 
